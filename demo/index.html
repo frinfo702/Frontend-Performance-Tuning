@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frontend Performance Playground</title>
+    <style>
+      /* Critical CSS - Above the fold styles */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans JP", sans-serif;
+        color: #1c1f26;
+        background: #f7f3ee;
+        line-height: 1.6;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.2fr);
+        gap: 32px;
+        padding: 72px 8vw 48px;
+        align-items: center;
+        background: #fff4e6;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+      }
+      .hero-content { max-width: 560px; }
+      .hero-kicker {
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 0 0 12px;
+      }
+      .hero h1 {
+        font-family: Georgia, "Hiragino Mincho ProN", serif;
+        font-size: clamp(32px, 4vw, 56px);
+        margin: 0 0 16px;
+      }
+      .hero-copy { margin: 0 0 24px; font-size: 18px; }
+      .hero-cta {
+        padding: 14px 28px;
+        font-size: 16px;
+        border: none;
+        background: #1c1f26;
+        color: #f7f3ee;
+        cursor: pointer;
+        border-radius: 999px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      }
+      .hero-image {
+        width: 100%;
+        height: auto;
+        box-shadow: 0 36px 52px rgba(0, 0, 0, 0.25);
+      }
+    </style>
+    <link rel="preload" href="assets/hero.svg" as="image" />
+    <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="styles.css" /></noscript>
+    <script>
+      // Inline minimal polyfill for CSS async loading
+      !function(e){"use strict";var t=function(t,n,r){var o,i=e.document,a=i.createElement("link");if(n)o=n;else{var l=(i.body||i.getElementsByTagName("head")[0]).childNodes;o=l[l.length-1]}var d=i.styleSheets;a.rel="stylesheet",a.href=t,a.media="only x",function e(t){if(i.body)return t();setTimeout(function(){e(t)})}(function(){o.parentNode.insertBefore(a,n?o:o.nextSibling)});var f=function(e){for(var t=a.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){f(e)})};return a.addEventListener&&a.addEventListener("load",r),a.onloadcssdefined=f,f(r),a};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);
+    </script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="hero-kicker">Performance Tuning Lab</p>
+        <h1>わざと遅いショップページ</h1>
+        <p class="hero-copy">
+          このページは高速化の練習用に、意図的に負荷が高くなる実装を含んでいます。
+          画像の量、JavaScript の処理、DOM の多さなどを調整して改善してみてください。
+        </p>
+        <button class="hero-cta">今すぐチェック</button>
+      </div>
+      <img
+        src="assets/hero.svg"
+        alt="巨大なヒーロー画像"
+        class="hero-image"
+        width="1600"
+        height="900"
+        decoding="async"
+        fetchpriority="high"
+      />
+    </header>
+
+    <section class="metrics">
+      <div class="metric">
+        <p class="metric-label">新着</p>
+        <p class="metric-value">128</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">閲覧中</p>
+        <p class="metric-value">3,942</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">おすすめ</p>
+        <p class="metric-value">74</p>
+      </div>
+    </section>
+
+    <section class="intro">
+      <h2>おすすめアイテム</h2>
+      <p>
+        長い説明文と多量のテキストを入れて、レイアウト計算を増やしています。ここから先は JavaScript
+        が大量のカードを生成します。
+      </p>
+    </section>
+
+    <section class="gallery">
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+      <img src="assets/thumb.svg" alt="サムネイル" width="400" height="300" loading="lazy" decoding="async" />
+    </section>
+
+    <section class="grid" id="grid"></section>
+
+    <footer class="footer">
+      <p>© 2026 Performance Tuning Demo</p>
+    </footer>
+  </body>
+</html>

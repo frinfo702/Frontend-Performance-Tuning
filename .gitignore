@@ -1,0 +1,38 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# Performance trace files (large binary files)
+*.json.gz
+demo/trace-*.json
+demo/lighthouse-*.json
+demo/perf-report.json
+
+# Node modules
+node_modules/
+.npm/
+
+# Build outputs
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp

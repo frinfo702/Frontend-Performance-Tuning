@@ -179,63 +179,10 @@ Split into **Minimal**, **Medium**, **Large** change sets. Provide diff snippets
 - RUM alerts for regressions (95th percentile).
 - PR checklist (bundle size, long tasks, 3rd-party budget).
 
-## Prerequisites
+## Examples (short)
 
-### Required MCP Servers
+### Example input 1 — React/Vite INP regression
 
-Configure these MCP servers in your Claude Code settings:
-
-```json
-{
-  "mcp_servers": {
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-chrome-devtools"]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@executeautomation/playwright-mcp-server"]
-    }
-  }
-}
-```
-
-### Optional MCP Servers
-
-```json
-{
-  "lighthouse": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-lighthouse"]
-  }
-}
-```
-
-## Usage
-
-### Basic invocation
-
-```bash
-/frontend-perf-tuner
-```
-
-The skill will prompt for any missing inputs (target, steps, environment, goals, constraints).
-
-### Focused optimization
-
-```bash
-/frontend-perf-tuner FCP is struggling, please improve it
-```
-
-```bash
-/frontend-perf-tuner INP exceeds 200ms, suggest improvements
-```
-
-## Examples
-
-### Example 1 — React/Vite INP regression
-
-**Input**:
 ```bash
 target: http://localhost:5173
 steps: Open list page → type in filter → click item details
@@ -245,7 +192,8 @@ constraints: no new deps, 1 day
 repo: ./web (npm run dev)
 ```
 
-**Output** (excerpt):
+### Example output 1 (excerpt)
+
 ```bash
 1) Executive summary
 - INP spikes come from filter re-rendering all rows on input.
@@ -264,9 +212,8 @@ repo: ./web (npm run dev)
 | Transfer size | 1.4MB | 1.2MB | +0.2MB |
 ```
 
-### Example 2 — Next.js LCP (image + font)
+### Example input 2 — Next.js LCP (image + font)
 
-**Input**:
 ```bash
 target: https://example.com
 steps: Open home → wait for hero to finish loading
@@ -275,175 +222,11 @@ goals: LCP < 2.5s, CLS < 0.1
 constraints: allow config changes only
 ```
 
-**Output** (excerpt):
+### Example output 2 (excerpt)
+
 ```bash
 1) Executive summary
 - LCP is gated by a 1.2MB hero image fetched late in the chain.
 - Font CSS blocks render; preload + font-display swaps reduce blocking.
 - Next/image priority and responsive sizes should hit LCP goal.
 ```
-
-### Example 3 — Real case: FCP optimization (this repo)
-
-**Input**:
-```bash
-/frontend-perf-tuner FCP is struggling, please improve it
-```
-
-**Before**:
-- Google Fonts (93.4kB) render-blocking
-- External CSS render-blocking
-- Unused vendor.js (12,000 element array)
-- Network requests: 9
-- Transfer size: ~100kB
-
-**Changes implemented**:
-1. Inlined critical CSS (38 lines of above-the-fold styles)
-2. Async-loaded non-critical CSS with preload
-3. Replaced Google Fonts with system font stack
-4. Removed vendor.js
-5. Removed excessive scroll animation
-
-**After**:
-- Render-blocking resources: 2 → **0** (100% reduction)
-- Transfer size: 100kB → **8kB** (92% reduction)
-- Network requests: 9 → **5** (44% reduction)
-
-**Trace files**: `demo/trace-cold.json.gz` (before) and `demo/trace-optimized.json.gz` (after)
-
-## Best Practices
-
-### Measurement environments
-
-**Mobile (recommended default)**:
-```
-viewport: 375x812
-network: Slow 4G
-CPU: 4x throttle
-cache: cold
-```
-
-**Desktop**:
-```
-viewport: 1920x1080
-network: Fast 3G
-CPU: 4x throttle
-cache: cold
-```
-
-### Optimization priorities
-
-1. **FCP/LCP**: Remove render-blocking resources (highest impact)
-2. **INP**: Split long tasks, add debounce/throttle
-3. **CLS**: Size attributes, font-display, avoid layout shifts
-4. **Transfer size**: Compression, optimization, code splitting
-
-### Regression prevention checklist
-
-```yaml
-Performance budgets (PR gates):
-  - FCP < 1.8s
-  - LCP < 2.5s
-  - CLS < 0.1
-  - INP < 200ms
-  - Total JS < 200kB
-  - Total CSS < 50kB
-```
-
-## Troubleshooting
-
-### Trace capture fails
-
-**Symptom**: Error when starting performance trace
-
-**Solutions**:
-- Verify Chrome DevTools MCP is running: `npx @modelcontextprotocol/server-chrome-devtools`
-- Check local server is accessible: `curl http://localhost:PORT`
-- Ensure no other DevTools instances are attached
-
-### Playwright connection refused
-
-**Symptom**: `net::ERR_CONNECTION_REFUSED`
-
-**Solutions**:
-- Confirm server is running: `lsof -i :PORT`
-- Wait 2-3 seconds after starting server before navigation
-- Use `http://localhost` not `http://127.0.0.1` (some configs differ)
-
-### Improvements not reflected in re-measure
-
-**Symptom**: Metrics unchanged or worse after applying patches
-
-**Solutions**:
-- Hard refresh (Ctrl+Shift+R / Cmd+Shift+R) to clear cache
-- Verify same throttling settings (network + CPU)
-- Check browser cache is disabled in DevTools
-- Run 3+ measurements and use median value
-
-### Render-blocking still present after CSS inlining
-
-**Symptom**: Lighthouse still reports render-blocking CSS
-
-**Solutions**:
-- Ensure `<link rel="preload" as="style" onload="...">` pattern is used
-- Verify critical CSS is truly inlined in `<style>` tag
-- Check no synchronous `<link rel="stylesheet">` remains in `<head>`
-- Add `media="print"` onload pattern as fallback
-
-## Advanced Usage
-
-### Custom trace categories
-
-Override default trace categories for deeper analysis:
-
-```javascript
-// In CDP trace call
-categories: [
-  'devtools.timeline',
-  'blink.user_timing',
-  'v8.execute',
-  'disabled-by-default-devtools.timeline',
-  'disabled-by-default-v8.cpu_profiler.hires',
-  'disabled-by-default-lighthouse'  // Add custom
-]
-```
-
-### Multi-page analysis
-
-For apps with multiple routes, create a script:
-
-```javascript
-const pages = [
-  { url: '/home', steps: [...] },
-  { url: '/product/123', steps: [...] },
-  { url: '/checkout', steps: [...] }
-];
-
-for (const page of pages) {
-  // Run skill with each page config
-}
-```
-
-### CI integration
-
-GitHub Actions example:
-
-```yaml
-name: Performance Budget
-on: [pull_request]
-jobs:
-  perf:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci && npm run build
-      - run: npx lighthouse http://localhost:3000 --budget-path=budget.json
-```
-
-## References
-
-- [Web Vitals](https://web.dev/vitals/)
-- [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
-- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/)
-- [Critical Rendering Path](https://developers.google.com/web/fundamentals/performance/critical-rendering-path)
-- [MCP Protocol](https://modelcontextprotocol.io/)
