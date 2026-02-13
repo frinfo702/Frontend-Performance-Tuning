@@ -1,34 +1,34 @@
 ---
 name: frontend-perf-tuner
-description: End-to-end frontend performance tuning workflow (measure → diagnose → propose fixes → re-measure → prevent regressions) for web apps. Use when asked to improve LCP/CLS/INP/TTFB/long tasks/CPU/network metrics, capture traces, or produce evidence-based patch plans and regression controls.
+description: Webアプリ向けのフロントエンド性能チューニングを端から端まで実行するワークフロー（計測 → 診断 → 改善案 → 再計測 → 回帰防止）。LCP/CLS/INP/TTFB/ロングタスク/CPU/ネットワーク指標の改善、トレース取得、根拠に基づくパッチ計画や回帰防止策の作成を求められたときに使用する。
 ---
 
 # Frontend Perf Tuner
 
-## Overview
+## 概要
 
-Execute a full frontend performance tuning loop: measure, diagnose root causes with traces and network evidence, propose fixes with cost/risk, re-measure, and set regression guardrails.
+フロントエンド性能改善のループを一通り実行する。具体的には、計測し、トレースとネットワーク証拠で根本原因を診断し、コスト/リスク付きの改善案を提示し、再計測し、最後に回帰防止のガードレールを設定する。
 
-## Inputs (ask for anything missing)
+## 入力（不足があれば確認する）
 
-- `target`: URL or local start steps
-- `steps`: reproduction steps (click/input/scroll)
-- `environment`: device/viewport, network/CPU throttling, cache state
-- `goals`: target thresholds (LCP/CLS/INP/TTFB/JS long tasks/etc.)
-- `constraints`: change limits, dependency policy, deadline
-- `repo` (optional): path + run/build/test commands
+- `target`: URL またはローカル起動手順
+- `steps`: 再現手順（クリック/入力/スクロール）
+- `environment`: デバイス/ビューポート、ネットワーク/CPU スロットリング、キャッシュ状態
+- `goals`: 目標しきい値（LCP/CLS/INP/TTFB/JS ロングタスク など）
+- `constraints`: 変更範囲、依存関係ポリシー、期限
+- `repo`（任意）: パス + 実行/ビルド/テストコマンド
 
-## Required tools
+## 必須ツール
 
-- **CDP MCP**: trace, Network, Coverage, Performance APIs
-- **Playwright MCP**: scripted repro and interaction timing
-- **Node/FS/Git MCP**: run scripts, edit files, diff patches
+- **CDP MCP**: Trace、Network、Coverage、Performance API
+- **Playwright MCP**: スクリプト化された再現とインタラクション計時
+- **Node/FS/Git MCP**: スクリプト実行、ファイル編集、パッチ差分作成
 
-**Optional:** Lighthouse CI MCP, WebPageTest MCP, bundle analyzer tooling
+**任意:** Lighthouse CI MCP、WebPageTest MCP、バンドル解析ツール
 
-## Output format (strict)
+## 出力形式（厳守）
 
-Return exactly 7 numbered sections with these headings:
+次の見出し名で、番号付き 7 セクションを**必ず**返す。
 
 1. Executive summary
 2. Measurements
@@ -38,55 +38,55 @@ Return exactly 7 numbered sections with these headings:
 6. Re-measure plan
 7. Regression prevention
 
-### Measurements table
+### Measurements テーブル
 
-Use a Markdown table with columns: `Metric | Current | Goal | Delta`.
+Markdown テーブルの列は `Metric | Current | Goal | Delta` を使う。
 
-Include rows in this order:
+行は次の順序で入れる。
 
 `LCP`, `CLS`, `INP`, `TTFB`, `FCP`, `TBT`, `JS long task`, `Transfer size`.
 
-## Workflow (A-F)
+## ワークフロー（A-F）
 
-### A. Preflight and reproducibility
+### A. 事前確認と再現性確保
 
-1. Confirm `target`, `steps`, `environment`, `goals`, `constraints`.
-2. If `repo` provided, run the minimum startup command and confirm the URL.
-3. Script the steps with Playwright MCP so every run is identical.
-4. Record cold and warm profiles (cold = no cache, warm = primed cache).
+1. `target`、`steps`、`environment`、`goals`、`constraints` を確認する。
+2. `repo` がある場合は最小の起動コマンドを実行し、URL を確認する。
+3. 毎回同一条件になるよう、Playwright MCP で手順をスクリプト化する。
+4. コールド/ウォームの両プロファイルを取得する（cold = キャッシュなし、warm = キャッシュあり）。
 
-### B. Measurement
+### B. 計測
 
-1. Capture **CDP trace** for both cold and warm runs.
-2. Export Network waterfall, critical request chain, cache headers, compression.
-3. Capture Coverage (unused JS/CSS) around the same steps.
-4. Optionally run Lighthouse CI (focus on audits + raw metrics, not score).
+1. コールド/ウォーム両方で **CDP trace** を取得する。
+2. Network waterfall、critical request chain、cache headers、圧縮状況を出力する。
+3. 同じ手順で Coverage（未使用 JS/CSS）を取得する。
+4. 必要なら Lighthouse CI を実行する（スコアではなく audit と生指標を重視）。
 
-### C. Analysis
+### C. 分析
 
-1. Identify LCP element and its dependency chain (resource timing + trace).
-2. Attribute INP / long tasks to event → task → function in main-thread flame chart.
-3. Split time by scripting, rendering, painting, layout.
-4. Correlate with bundle size, unused JS/CSS, and network blocking.
+1. LCP 要素と依存チェーンを特定する（resource timing + trace）。
+2. メインスレッド flame chart で、INP/ロングタスクを event → task → function にひも付ける。
+3. 時間を scripting、rendering、painting、layout に分解する。
+4. バンドルサイズ、未使用 JS/CSS、ネットワークブロッキングとの相関を確認する。
 
-### D. Improvement proposals
+### D. 改善提案
 
-1. Prioritize fixes with evidence and quantify expected impact.
-2. Keep minimal changes first; defer dependency or architecture changes.
-3. Always include effect, cost, risk, and verification method.
+1. 証拠に基づいて修正を優先順位付けし、期待効果を定量化する。
+2. まずは最小変更を優先し、依存関係やアーキテクチャ変更は後回しにする。
+3. 効果、コスト、リスク、検証方法を必ず含める。
 
-### E. Re-measure
+### E. 再計測
 
-1. Re-run the same scripted steps with identical environment settings.
-2. Report deltas and whether goals are met.
+1. 同一環境設定で同じスクリプト手順を再実行する。
+2. 差分と、目標達成可否を報告する。
 
-### F. Regression prevention
+### F. 回帰防止
 
-1. Define perf budgets and CI gating rules.
-2. Add RUM or synthetic monitoring checks.
-3. Provide a short checklist for future PRs.
+1. パフォーマンス予算と CI ゲート条件を定義する。
+2. RUM または synthetic monitoring のチェックを追加する。
+3. 今後の PR 向けに短いチェックリストを提示する。
 
-## Command examples (adapt as needed)
+## コマンド例（必要に応じて調整）
 
 - Install: `npm ci`
 - Dev server: `npm run dev` or `npm start`
@@ -94,9 +94,9 @@ Include rows in this order:
 - Playwright run: `npx playwright test` (or `node ./scripts/perf-run.mjs`)
 - Lighthouse CI (optional): `lhci autorun`
 
-## Playwright measurement script template (Node/TS)
+## Playwright 計測スクリプトのテンプレート（Node/TS）
 
-Use this as a starting point; fill `steps()` with the provided scenario.
+これを出発点として使い、提示されたシナリオで `steps()` を埋める。
 
 ```ts
 import { chromium } from "playwright";
@@ -113,7 +113,7 @@ const env: Env = {
 };
 
 async function steps(page: any) {
-  // TODO: replicate user steps (click/input/scroll)
+  // TODO: ユーザー手順を再現（クリック/入力/スクロール）
   // await page.click('[data-testid="search"]');
   // await page.fill('input[name="q"]', 'example');
   // await page.keyboard.press('Enter');
@@ -137,51 +137,51 @@ async function run(label: string) {
 run("warm");
 ```
 
-## CDP trace essentials (MCP)
+## CDP trace の要点（MCP）
 
-- Emulate the requested `environment` (viewport, network, CPU) before tracing.
-- Enable `Network` + `Performance`, then start `Tracing` with screenshots off.
-- Use categories like `devtools.timeline`, `blink.user_timing`, `v8.execute`, `disabled-by-default-devtools.timeline`, `disabled-by-default-v8.cpu_profiler.hires`.
-- Start tracing **before** navigation and stop after the last interaction.
-- Save trace file name with `cold`/`warm` suffix and record timestamps.
+- トレース前に、要求された `environment`（viewport、network、CPU）をエミュレートする。
+- `Network` と `Performance` を有効化し、スクリーンショットを無効化した状態で `Tracing` を開始する。
+- `devtools.timeline`、`blink.user_timing`、`v8.execute`、`disabled-by-default-devtools.timeline`、`disabled-by-default-v8.cpu_profiler.hires` などのカテゴリを使う。
+- トレースはナビゲーション**前**に開始し、最後の操作後に停止する。
+- トレースファイル名には `cold`/`warm` の接尾辞を付け、タイムスタンプを記録する。
 
-## Evidence rules
+## 証拠ルール
 
-- Do not claim a root cause without trace or network evidence.
-- Reference evidence by file name, trace timestamp, request URL, or log snippet.
+- trace または network の証拠なしに根本原因を断定しない。
+- 証拠は、ファイル名、trace タイムスタンプ、request URL、ログ断片のいずれかで参照する。
 
-## Bottleneck ranking rubric
+## ボトルネック順位付けの基準
 
-Score each item (1–5) where **higher is better**:
+各項目を 1〜5 で採点する（**高いほど良い**）。
 
 - `Impact`: 1 low → 5 high
 - `Cost`: 1 high effort → 5 low effort
 - `Risk`: 1 high risk → 5 low risk
 
-Compute `Priority = Impact × Cost × Risk` and sort descending.
+`Priority = Impact × Cost × Risk` を計算し、降順で並べる。
 
-Each bottleneck must include: **why / evidence / fix / side effects / verification**.
+各ボトルネックには、**why / evidence / fix / side effects / verification** を必ず含める。
 
-## Patch plan format
+## パッチ計画の形式
 
-Split into **Minimal**, **Medium**, **Large** change sets. Provide diff snippets when possible.
+変更セットを **Minimal**、**Medium**、**Large** に分ける。可能なら diff 断片を示す。
 
-## Re-measure plan
+## 再計測計画
 
-- Same URL, steps, environment, cache state.
-- Run at least 3 times; report median.
-- Pass criteria = all goals met.
+- URL、steps、environment、cache state を同一にする。
+- 最低 3 回実行し、中央値を報告する。
+- 合格条件は「全目標を満たすこと」。
 
-## Regression prevention
+## 回帰防止
 
-- Perf budget thresholds in CI (fail conditions).
-- Lighthouse CI or custom checks for core metrics.
-- RUM alerts for regressions (95th percentile).
-- PR checklist (bundle size, long tasks, 3rd-party budget).
+- CI に性能予算しきい値を設定する（失敗条件を明記）。
+- 主要指標に対して Lighthouse CI またはカスタムチェックを導入する。
+- 回帰検知のために RUM アラート（95 パーセンタイル）を設定する。
+- PR チェックリスト（バンドルサイズ、ロングタスク、サードパーティ予算）を用意する。
 
-## Examples (short)
+## 例（簡潔）
 
-### Example input 1 — React/Vite INP regression
+### 入力例 1 — React/Vite の INP 回帰
 
 ```bash
 target: http://localhost:5173
@@ -192,7 +192,7 @@ constraints: no new deps, 1 day
 repo: ./web (npm run dev)
 ```
 
-### Example output 1 (excerpt)
+### 出力例 1（抜粋）
 
 ```bash
 1) Executive summary
@@ -212,7 +212,7 @@ repo: ./web (npm run dev)
 | Transfer size | 1.4MB | 1.2MB | +0.2MB |
 ```
 
-### Example input 2 — Next.js LCP (image + font)
+### 入力例 2 — Next.js の LCP（画像 + フォント）
 
 ```bash
 target: https://example.com
@@ -222,7 +222,7 @@ goals: LCP < 2.5s, CLS < 0.1
 constraints: allow config changes only
 ```
 
-### Example output 2 (excerpt)
+### 出力例 2（抜粋）
 
 ```bash
 1) Executive summary
